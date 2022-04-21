@@ -2,20 +2,31 @@ package com.thoughtworks.dependencydemoapp.data;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thoughtworks.dependencydemoapp.Message;
+import com.thoughtworks.dependencydemoapp.OutputMessage;
 import net.jcip.annotations.Immutable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.web.bind.annotation.*;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @RestController
 public class SampleDataController {
 
     public static final Logger log = LoggerFactory.getLogger(SampleDataController.class);
+
+    @MessageMapping("/chat")
+    @SendTo("/topic/messages")
+    public OutputMessage send(Message message) throws Exception {
+        String time = new SimpleDateFormat("HH:mm").format(new Date());
+        return new OutputMessage(message.getFrom(), message.getText(), time);
+    }
 
     @GetMapping(path = "/data")
     public Data getData() {
