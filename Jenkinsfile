@@ -21,6 +21,15 @@ pipeline {
       }
     } 
   
+      stage ('SAST') {
+      steps {
+        withSonarQubeEnv('sonar') {
+          sh 'mvn sonar:sonar'
+          sh 'cat target/sonar/report-task.txt'
+        }
+      }
+    }
+    
     
   stage ('Build') {
       steps {
@@ -33,6 +42,16 @@ pipeline {
             getImageVulnsFromQualys imageIds: 'e0421a24221d', useGlobalConfig: true
         }
     }
+    
+    
+    stage ('Deploy-To-Tomcat') {
+            steps {
+           sshagent(['tomcat']) {
+                sh 'scp -o StrictHostKeyChecking=no target/*.war ubuntu@3.110.179.103:/prod/apache-tomcat-9.0.60/webapps/webapp.war'
+              }      
+           }       
+        }
+    
     
     
     }
